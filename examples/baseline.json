@@ -1,0 +1,79 @@
+{
+    "name": "baseline",
+    "metadata": {
+        "model": "gpt-4",
+        "prompt_version": "v1.0"
+    },
+    "responses": [
+        {
+            "id": "test_001",
+            "input": "What is 2 + 2?",
+            "output": "2 + 2 equals 4.",
+            "expected": "4",
+            "pass": true
+        },
+        {
+            "id": "test_002",
+            "input": "Summarize the quarterly earnings report for Q3 2024.",
+            "output": "The company reported revenue of $12.5 million in Q3 2024, up 15% year-over-year. Operating expenses were $8.2 million, resulting in an operating income of $4.3 million.",
+            "expected": null,
+            "pass": true
+        },
+        {
+            "id": "test_003",
+            "input": "Convert this JSON to YAML: {\"name\": \"test\", \"value\": 123}",
+            "output": "name: test\nvalue: 123",
+            "expected": "name: test\nvalue: 123",
+            "pass": true
+        },
+        {
+            "id": "test_004",
+            "input": "What are the side effects of ibuprofen?",
+            "output": "Common side effects of ibuprofen include stomach upset, nausea, and headache. More serious side effects can include stomach bleeding and kidney problems. Always consult a doctor before use.",
+            "expected": null,
+            "pass": true
+        },
+        {
+            "id": "test_005",
+            "input": "Write a haiku about programming.",
+            "output": "Lines of code align\nBugs hide in the syntax maze\nCoffee fuels the fix",
+            "expected": null,
+            "pass": true
+        },
+        {
+            "id": "test_006",
+            "input": "Calculate the compound interest on $1000 at 5% for 3 years.",
+            "output": "Using the formula A = P(1 + r)^t, where P=$1000, r=0.05, t=3: A = 1000(1.05)^3 = $1157.63. The compound interest earned is $157.63.",
+            "expected": "$157.63",
+            "pass": true
+        },
+        {
+            "id": "test_007",
+            "input": "Translate 'Hello, how are you?' to Spanish.",
+            "output": "Hola, ¿cómo estás?",
+            "expected": "Hola, ¿cómo estás?",
+            "pass": true
+        },
+        {
+            "id": "test_008",
+            "input": "Parse this date: 'March 15, 2024' into ISO format.",
+            "output": "2024-03-15",
+            "expected": "2024-03-15",
+            "pass": true
+        },
+        {
+            "id": "test_009",
+            "input": "What is the capital of Australia?",
+            "output": "The capital of Australia is Canberra.",
+            "expected": "Canberra",
+            "pass": true
+        },
+        {
+            "id": "test_010",
+            "input": "Explain quantum entanglement in simple terms.",
+            "output": "Quantum entanglement is when two particles become connected in such a way that the state of one instantly affects the other, no matter how far apart they are. It's like having two magic coins that always land on opposite sides.",
+            "expected": null,
+            "pass": true
+        }
+    ]
+}

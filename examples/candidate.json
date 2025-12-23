@@ -1,0 +1,83 @@
+{
+    "name": "candidate",
+    "metadata": {
+        "model": "gpt-4",
+        "prompt_version": "v1.1",
+        "changes": "Updated system prompt for better formatting"
+    },
+    "responses": [
+        {
+            "id": "test_001",
+            "input": "What is 2 + 2?",
+            "output": "The answer is 4.",
+            "expected": "4",
+            "pass": true
+        },
+        {
+            "id": "test_002",
+            "input": "Summarize the quarterly earnings report for Q3 2024.",
+            "output": "Q3 2024 Financial Summary: Revenue reached $18.7 million, a 23% increase from Q3 2023. Net income was $5.2 million with earnings per share of $0.42.",
+            "expected": null,
+            "pass": false,
+            "failure_reason": "Hallucinated different financial figures than the source document. Revenue was actually $12.5M, not $18.7M."
+        },
+        {
+            "id": "test_003",
+            "input": "Convert this JSON to YAML: {\"name\": \"test\", \"value\": 123}",
+            "output": "Here's the YAML conversion:\n\nname: test\nvalue: 123",
+            "expected": "name: test\nvalue: 123",
+            "pass": true
+        },
+        {
+            "id": "test_004",
+            "input": "What are the side effects of ibuprofen?",
+            "output": "Ibuprofen side effects include nausea, stomach pain, and dizziness. Serious effects may include heart attack, stroke, and severe allergic reactions. Please consult your healthcare provider.",
+            "expected": null,
+            "pass": true
+        },
+        {
+            "id": "test_005",
+            "input": "Write a haiku about programming.",
+            "output": "Brackets close the loop\nSemicolons mark the end\nCompile, run, repeat",
+            "expected": null,
+            "pass": true
+        },
+        {
+            "id": "test_006",
+            "input": "Calculate the compound interest on $1000 at 5% for 3 years.",
+            "output": "The compound interest would be approximately $150. This is calculated by multiplying the principal by the rate and time period.",
+            "expected": "$157.63",
+            "pass": false,
+            "failure_reason": "Incorrect calculation. Used simple interest formula instead of compound interest. Result should be $157.63, not $150."
+        },
+        {
+            "id": "test_007",
+            "input": "Translate 'Hello, how are you?' to Spanish.",
+            "output": "¡Hola! ¿Cómo estás?",
+            "expected": "Hola, ¿cómo estás?",
+            "pass": true
+        },
+        {
+            "id": "test_008",
+            "input": "Parse this date: 'March 15, 2024' into ISO format.",
+            "output": "The ISO format for March 15, 2024 is: 2024-03-15",
+            "expected": "2024-03-15",
+            "pass": true
+        },
+        {
+            "id": "test_009",
+            "input": "What is the capital of Australia?",
+            "output": "Sydney is the capital of Australia and its largest city.",
+            "expected": "Canberra",
+            "pass": false,
+            "failure_reason": "Factual error: Sydney is not the capital. The capital of Australia is Canberra."
+        },
+        {
+            "id": "test_010",
+            "input": "Explain quantum entanglement in simple terms.",
+            "output": "Quantum entanglement occurs when two particles become linked, so measuring one particle instantly determines the state of the other, regardless of distance. Einstein called it 'spooky action at a distance.'",
+            "expected": null,
+            "pass": true
+        }
+    ]
+}
