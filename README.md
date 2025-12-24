@@ -48,6 +48,8 @@ export OPENROUTER_API_KEY=your_key  # Get one at openrouter.ai
 reco compare baseline.json candidate.json
 ```
 
+> 🚀 **Try the demo**: Clone the [examples/demo](examples/demo) folder for a working setup you can run in 30 seconds.
+
 ## Why reco?
 
 **The problem**: You changed a prompt. Your eval suite runs. You see:

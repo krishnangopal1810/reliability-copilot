@@ -1,5 +1,5 @@
 prompts:
-  - "Answer very briefly: {{question}}"
+  - "Answer the following question in one sentence: {{question}}"
 
 providers:
   - openrouter:xiaomi/mimo-v2-flash:free
@@ -10,13 +10,15 @@ tests:
     assert:
       - type: contains
         value: "4"
+
   - vars:
       question: "What is the capital of France?"
     assert:
       - type: contains
         value: "Paris"
+
   - vars:
-      question: "What color is the sky?"
+      question: "What color is the sky on a clear day?"
     assert:
       - type: icontains
         value: "blue"
