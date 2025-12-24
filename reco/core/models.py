@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID, uuid4
 
 
@@ -63,7 +63,8 @@ class FailureCluster:
     severity: Severity = Severity.MEDIUM
     response_ids: list[str] = field(default_factory=list)
     
-    # Phase 1+: Track cluster across runs
+    # Phase 1: History tracking
+    is_recurring: bool = False
     first_seen: Optional[datetime] = None
     occurrence_count: int = 1
 
@@ -89,3 +90,60 @@ class Judgment:
     risk_level: Severity = Severity.MEDIUM
     key_findings: list[str] = field(default_factory=list)
     action_items: list[str] = field(default_factory=list)
+
+
+# Phase 3: Agent Trace Models
+
+@dataclass
+class AgentStep:
+    """A single step in an agent trace."""
+    step: int
+    action: str
+    input: dict = field(default_factory=dict)
+    output: Any = None
+    success: bool = True
+    error: Optional[str] = None
+    duration_ms: Optional[int] = None
+
+
+@dataclass
+class AgentTrace:
+    """A complete agent execution trace."""
+    id: str
+    goal: str
+    outcome: str  # "success" | "failed" | "partial"
+    steps: list[AgentStep] = field(default_factory=list)
+    metadata: dict = field(default_factory=dict)
+    
+    @property
+    def success_rate(self) -> float:
+        if not self.steps:
+            return 0.0
+        return sum(1 for s in self.steps if s.success) / len(self.steps)
+    
+    @property
+    def failed_steps(self) -> list[AgentStep]:
+        return [s for s in self.steps if not s.success]
+    
+    @property
+    def tools_used(self) -> list[str]:
+        return list(dict.fromkeys(s.action for s in self.steps))
+
+
+@dataclass
+class AgentIssue:
+    """An issue detected in an agent trace."""
+    issue_type: str  # e.g., "Tool Execution Error", "No Recovery"
+    severity: Severity
+    step: Optional[int] = None
+    description: str = ""
+    details: dict = field(default_factory=dict)
+
+
+@dataclass
+class AgentAnalysis:
+    """Result of analyzing an agent trace."""
+    trace: AgentTrace
+    issues: list[AgentIssue] = field(default_factory=list)
+    patterns: list[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)

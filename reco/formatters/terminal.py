@@ -140,6 +140,17 @@ class TerminalFormatter:
             lines.append(f"[bold]CLUSTER {i}: {cluster.label}[/bold] ({len(cluster.response_ids)} cases)")
             lines.append(f"├─ Severity: {severity_badge}")
             
+            # Phase 1: Show recurring/new status
+            if cluster.is_recurring:
+                first_seen_str = ""
+                if cluster.first_seen:
+                    first_seen_str = f" (first seen: {cluster.first_seen.strftime('%b %d')})"
+                lines.append(
+                    f"├─ [yellow]⚠️  RECURRING: Appeared {cluster.occurrence_count}x in recent runs{first_seen_str}[/yellow]"
+                )
+            elif cluster.label not in ("Uncategorized", "Single Failure"):
+                lines.append("├─ [green]✨ NEW: First time seeing this pattern[/green]")
+            
             if cluster.description and cluster.description != f"{len(cluster.response_ids)} failures with similar pattern":
                 lines.append(f"├─ Pattern: {cluster.description[:80]}")
             
@@ -179,3 +190,114 @@ class TerminalFormatter:
     def render_warning(self, message: str) -> None:
         """Render a warning message."""
         self.console.print(f"[yellow]⚠️[/yellow] {message}")
+    
+    def render_profile(
+        self, 
+        failure_stats: list[tuple[str, int, int]],
+        run_count: int,
+        last_n: int
+    ) -> None:
+        """Render reliability profile.
+        
+        Args:
+            failure_stats: List of (label, count, total) tuples
+            run_count: Total runs in history
+            last_n: Number of runs analyzed
+        """
+        runs_shown = min(run_count, last_n)
+        
+        header = Text()
+        header.append("📊 RELIABILITY PROFILE ", style="bold")
+        header.append(f"(last {runs_shown} runs)", style="dim")
+        
+        lines = []
+        lines.append("")
+        
+        if not failure_stats:
+            lines.append("[dim]No failure patterns recorded yet.[/dim]")
+            lines.append("[dim]Run 'reco cluster' on eval files to build history.[/dim]")
+        else:
+            lines.append("[bold red]🔴 TOP FAILURE MODES[/bold red]")
+            lines.append("")
+            
+            for i, (label, count, total) in enumerate(failure_stats[:5], 1):
+                percentage = (count / total * 100) if total > 0 else 0
+                lines.append(f"   {i}. {label} — [bold]{count}x[/bold] ({percentage:.0f}%)")
+        
+        lines.append("")
+        
+        content = "\n".join(lines)
+        
+        panel = Panel(
+            content,
+            title=header,
+            border_style="blue",
+            padding=(1, 2),
+        )
+        
+        self.console.print(panel)
+    
+    def render_agent_analysis(self, analysis: "AgentAnalysis") -> None:
+        """Render agent trace analysis.
+        
+        Args:
+            analysis: The agent analysis to render
+        """
+        from ..core.models import AgentAnalysis
+        
+        trace = analysis.trace
+        
+        header = Text()
+        header.append("🤖 AGENT TRACE ANALYSIS", style="bold")
+        
+        lines = []
+        lines.append("")
+        
+        # Summary section
+        lines.append("[bold]📋 SUMMARY[/bold]")
+        total_steps = len(trace.steps)
+        success_count = sum(1 for s in trace.steps if s.success)
+        failed_count = total_steps - success_count
+        
+        lines.append(f"   ├─ Steps: {total_steps} total ({success_count} success, {failed_count} failed)")
+        lines.append(f"   ├─ Tools: {', '.join(trace.tools_used)}")
+        
+        outcome_color = "green" if trace.outcome == "success" else "red"
+        lines.append(f"   └─ Outcome: [{outcome_color}]{trace.outcome.upper()}[/{outcome_color}]")
+        lines.append("")
+        
+        # Issues section
+        if analysis.issues:
+            lines.append("[bold yellow]⚠️  ISSUES DETECTED[/bold yellow]")
+            for i, issue in enumerate(analysis.issues):
+                prefix = "├─" if i < len(analysis.issues) - 1 else "└─"
+                step_info = f" at step {issue.step}" if issue.step else ""
+                lines.append(f"   {prefix} {issue.issue_type}{step_info}")
+                if issue.description:
+                    lines.append(f"   │   └─ {issue.description}")
+            lines.append("")
+        
+        # Patterns section
+        if analysis.patterns:
+            lines.append("[bold]🎯 PATTERNS[/bold]")
+            for pattern in analysis.patterns:
+                lines.append(f"   └─ {pattern}")
+            lines.append("")
+        
+        # Recommendations section
+        if analysis.recommendations:
+            lines.append("[bold green]💡 RECOMMENDATIONS[/bold green]")
+            for rec in analysis.recommendations:
+                lines.append(f"   • {rec}")
+            lines.append("")
+        
+        content = "\n".join(lines)
+        
+        panel = Panel(
+            content,
+            title=header,
+            border_style="cyan",
+            padding=(1, 2),
+        )
+        
+        self.console.print(panel)

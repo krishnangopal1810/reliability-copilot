@@ -43,7 +43,8 @@ class TestOpenRouterProviderInit:
         """Test default model is set."""
         with patch("reco.providers.llm.openrouter.OpenAI"):
             provider = OpenRouterProvider(api_key="key")
-            assert "claude" in provider.model.lower() or "anthropic" in provider.model.lower()
+            # Default is xiaomi/mimo-v2-flash:free
+            assert "xiaomi" in provider.model.lower() or "mimo" in provider.model.lower()
     
     def test_init_uses_openrouter_base_url(self):
         """Test that OpenRouter base URL is used."""

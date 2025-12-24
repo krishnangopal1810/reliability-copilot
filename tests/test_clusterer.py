@@ -392,3 +392,160 @@ class TestClusterer:
         
         # Should fall back to using output
         assert len(result) > 0
+
+
+# ============================================================================
+# Phase 1: Storage Integration Tests
+# ============================================================================
+
+class TestClustererWithStorage:
+    """Tests for clusterer with storage integration (Phase 1)."""
+    
+    def test_clusterer_accepts_storage_parameter(self, mock_embedder, mock_llm, mock_storage):
+        """Test that clusterer accepts optional storage parameter."""
+        clusterer = Clusterer(mock_embedder, mock_llm, storage=mock_storage)
+        
+        assert clusterer.storage == mock_storage
+    
+    def test_clusterer_saves_clusters_to_storage(self, mock_embedder, mock_llm, mock_storage):
+        """Test that clusterer saves clusters when storage is provided."""
+        from uuid import uuid4
+        
+        failures = [
+            Response(id="t1", input="Q", output="A", passed=False, failure_reason="Error pattern A"),
+            Response(id="t2", input="Q", output="A", passed=False, failure_reason="Error pattern A similar"),
+        ]
+        
+        mock_llm.set_default_response("LABEL: Test Pattern\nSEVERITY: MEDIUM")
+        
+        run_id = uuid4()
+        clusterer = Clusterer(mock_embedder, mock_llm, storage=mock_storage)
+        clusterer.cluster(failures, run_id=run_id)
+        
+        # Should have saved clusters
+        assert len(mock_storage.saved_clusters) == 1
+        saved_clusters, saved_run_id, saved_embeddings = mock_storage.saved_clusters[0]
+        assert saved_run_id == run_id
+        assert len(saved_clusters) > 0
+        assert len(saved_embeddings) > 0
+    
+    def test_clusterer_does_not_save_without_run_id(self, mock_embedder, mock_llm, mock_storage):
+        """Test that clusterer doesn't save if no run_id provided."""
+        failures = [
+            Response(id="t1", input="Q", output="A", passed=False, failure_reason="Error"),
+            Response(id="t2", input="Q", output="A", passed=False, failure_reason="Error similar"),
+        ]
+        
+        mock_llm.set_default_response("LABEL: Test\nSEVERITY: MEDIUM")
+        
+        clusterer = Clusterer(mock_embedder, mock_llm, storage=mock_storage)
+        clusterer.cluster(failures)  # No run_id
+        
+        # Should not have saved
+        assert len(mock_storage.saved_clusters) == 0
+    
+    def test_clusterer_marks_recurring_patterns(self, mock_embedder, mock_llm, mock_storage):
+        """Test that clusterer marks patterns as recurring when history exists."""
+        from datetime import datetime, timezone
+        
+        failures = [
+            Response(id="t1", input="Q", output="A", passed=False, failure_reason="Known error pattern"),
+            Response(id="t2", input="Q", output="A", passed=False, failure_reason="Known error pattern similar"),
+        ]
+        
+        mock_llm.set_default_response("LABEL: Known Pattern\nSEVERITY: HIGH")
+        
+        # Set up history
+        mock_storage.set_occurrence_count(3, datetime(2024, 1, 15, tzinfo=timezone.utc))
+        
+        clusterer = Clusterer(mock_embedder, mock_llm, storage=mock_storage)
+        result = clusterer.cluster(failures)
+        
+        # Find non-uncategorized cluster
+        labeled = [c for c in result if c.label not in ("Uncategorized", "Single Failure")]
+        if labeled:
+            cluster = labeled[0]
+            assert cluster.is_recurring is True
+            assert cluster.occurrence_count == 4  # 3 + 1 for current
+            assert cluster.first_seen is not None
+    
+    def test_clusterer_new_patterns_not_recurring(self, mock_embedder, mock_llm, mock_storage):
+        """Test that new patterns are not marked as recurring."""
+        failures = [
+            Response(id="t1", input="Q", output="A", passed=False, failure_reason="Brand new error"),
+            Response(id="t2", input="Q", output="A", passed=False, failure_reason="Brand new error similar"),
+        ]
+        
+        mock_llm.set_default_response("LABEL: New Pattern\nSEVERITY: MEDIUM")
+        
+        # No history
+        mock_storage.set_occurrence_count(0, None)
+        
+        clusterer = Clusterer(mock_embedder, mock_llm, storage=mock_storage)
+        result = clusterer.cluster(failures)
+        
+        # New patterns should not be recurring
+        for cluster in result:
+            if cluster.label not in ("Uncategorized", "Single Failure"):
+                assert cluster.is_recurring is False
+    
+    def test_clusterer_works_without_storage(self, mock_embedder, mock_llm):
+        """Test that clusterer works when no storage is provided."""
+        failures = [
+            Response(id="t1", input="Q", output="A", passed=False, failure_reason="Error"),
+            Response(id="t2", input="Q", output="A", passed=False, failure_reason="Error similar"),
+        ]
+        
+        mock_llm.set_default_response("LABEL: Test\nSEVERITY: MEDIUM")
+        
+        # No storage provided
+        clusterer = Clusterer(mock_embedder, mock_llm)
+        result = clusterer.cluster(failures)
+        
+        # Should still work and return clusters
+        assert len(result) > 0
+        
+        # Clusters should have default history values
+        for cluster in result:
+            assert cluster.is_recurring is False
+            assert cluster.occurrence_count == 1
+    
+    def test_clusterer_reuses_existing_labels(self, mock_embedder, mock_llm, mock_storage):
+        """Test that clusterer reuses labels from historical matches instead of generating new ones."""
+        from reco.storage.base import ClusterMatch
+        from reco.core.models import Severity
+        from uuid import uuid4
+        from datetime import datetime, timezone
+        
+        failures = [
+            Response(id="t1", input="Q", output="A", passed=False, failure_reason="Known error pattern"),
+            Response(id="t2", input="Q", output="A", passed=False, failure_reason="Known error pattern similar"),
+        ]
+        
+        # Set up storage to return a historical match
+        mock_storage.set_similar_clusters([
+            ClusterMatch(
+                cluster_id=uuid4(),
+                label="Historical Label That Should Be Reused",
+                similarity=0.92,
+                run_id=uuid4(),
+                run_date=datetime.now(timezone.utc),
+                occurrence_count=3,
+                severity=Severity.HIGH,
+            )
+        ])
+        
+        # LLM would generate a different label, but should NOT be called
+        mock_llm.set_default_response("LABEL: New Different Label\nSEVERITY: LOW")
+        
+        clusterer = Clusterer(mock_embedder, mock_llm, storage=mock_storage)
+        result = clusterer.cluster(failures)
+        
+        # Find non-uncategorized cluster
+        labeled = [c for c in result if c.label not in ("Uncategorized", "Single Failure")]
+        
+        if labeled:
+            # Should use the historical label, not the LLM-generated one
+            assert labeled[0].label == "Historical Label That Should Be Reused"
+            assert labeled[0].severity == Severity.HIGH
+            assert labeled[0].is_recurring is True

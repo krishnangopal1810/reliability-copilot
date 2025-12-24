@@ -1,0 +1,91 @@
+{
+    "id": "trace_001",
+    "goal": "Search for flights from NYC to LA and book the cheapest option",
+    "outcome": "failed",
+    "steps": [
+        {
+            "step": 1,
+            "action": "search_flights",
+            "input": {
+                "from": "NYC",
+                "to": "LA",
+                "date": "2024-01-15"
+            },
+            "output": {
+                "flights": [
+                    {
+                        "id": "FL001",
+                        "price": 299,
+                        "airline": "Delta"
+                    },
+                    {
+                        "id": "FL002",
+                        "price": 275,
+                        "airline": "United"
+                    }
+                ]
+            },
+            "success": true,
+            "duration_ms": 1250
+        },
+        {
+            "step": 2,
+            "action": "compare_prices",
+            "input": {
+                "flights": [
+                    "FL001",
+                    "FL002"
+                ]
+            },
+            "output": {
+                "cheapest": "FL002",
+                "price": 275
+            },
+            "success": true,
+            "duration_ms": 50
+        },
+        {
+            "step": 3,
+            "action": "get_flight_details",
+            "input": {
+                "flight_id": "FL002"
+            },
+            "output": {
+                "departure": "08:30",
+                "arrival": "11:45",
+                "duration": "5h 15m"
+            },
+            "success": true,
+            "duration_ms": 890
+        },
+        {
+            "step": 4,
+            "action": "book_flight",
+            "input": {
+                "flight_id": "FL002",
+                "passenger": "John Doe"
+            },
+            "output": null,
+            "success": false,
+            "error": "Payment gateway timeout - connection refused",
+            "duration_ms": 30000
+        },
+        {
+            "step": 5,
+            "action": "book_flight",
+            "input": {
+                "flight_id": "FL002",
+                "passenger": "John Doe"
+            },
+            "output": null,
+            "success": false,
+            "error": "Payment gateway timeout - connection refused",
+            "duration_ms": 30000
+        }
+    ],
+    "metadata": {
+        "agent_version": "1.2.0",
+        "user_id": "user_123",
+        "session_id": "sess_abc"
+    }
+}

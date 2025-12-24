@@ -33,9 +33,9 @@ class TestConfigDefaults:
         assert config.storage_backend == "memory"
     
     def test_default_storage_path(self):
-        """Test default storage path."""
+        """Test default storage path is project-relative."""
         config = Config()
-        assert config.storage_path == Path.home() / ".reco" / "data.db"
+        assert config.storage_path == Path(".reco") / "data.db"
 
 
 class TestConfigEnvironmentVariables:
@@ -65,7 +65,8 @@ class TestConfigEnvironmentVariables:
         with patch.dict(os.environ, {}, clear=True):
             os.environ.pop("RECO_LLM_MODEL", None)
             config = Config()
-            assert "claude" in config.llm_model.lower() or "anthropic" in config.llm_model.lower()
+            # Default is xiaomi/mimo-v2-flash:free
+            assert "xiaomi" in config.llm_model.lower() or "mimo" in config.llm_model.lower()
     
     def test_embedding_model_from_env(self):
         """Test loading embedding model from environment."""

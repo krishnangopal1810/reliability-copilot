@@ -33,7 +33,7 @@ class Config:
     # Storage settings (Phase 1+)
     storage_backend: str = "memory"  # memory, sqlite, postgres
     storage_path: Path = field(
-        default_factory=lambda: Path.home() / ".reco" / "data.db"
+        default_factory=lambda: Path(".reco") / "data.db"
     )
     
     @classmethod

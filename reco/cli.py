@@ -149,6 +149,11 @@ def cluster(
         "--min-size", "-m",
         help="Minimum failures to form a cluster",
     ),
+    no_history: bool = typer.Option(
+        False,
+        "--no-history",
+        help="Disable failure memory (don't track patterns across runs)",
+    ),
 ):
     """Cluster failures to identify patterns.
     
@@ -175,10 +180,20 @@ def cluster(
     console.print("[dim]Generating embeddings...[/dim]")
     embedder = SentenceTransformerProvider()
     
+    # Phase 1: Initialize storage for failure memory
+    storage = None
+    if not no_history:
+        from .storage.sqlite import SQLiteStorage
+        storage = SQLiteStorage()
+        storage.save_run(run)
+    
     console.print("[dim]Clustering failures...[/dim]")
     config = ClusterConfig(min_cluster_size=min_size)
-    clusterer = Clusterer(embedder, llm, config)
-    clusters = clusterer.cluster(failures)
+    clusterer = Clusterer(embedder, llm, config, storage=storage)
+    clusters = clusterer.cluster(failures, run_id=run.id)
+    
+    if storage:
+        storage.close()
     
     console.print()
     formatter.render_clusters(clusters, len(failures))
@@ -212,6 +227,77 @@ def diff(
     # - Load both runs
     # - If case specified, show side-by-side diff for that case
     # - If no case, show summary of changed cases with option to drill down
+
+
+@app.command()
+def profile(
+    last_n: int = typer.Option(
+        10,
+        "--last-n", "-n",
+        help="Number of recent runs to analyze",
+    ),
+):
+    """Show reliability profile from run history.
+    
+    Displays the top failure modes across your recent cluster runs,
+    helping identify persistent patterns that need attention.
+    
+    Example:
+        reco profile
+        reco profile --last-n 5
+    """
+    from .storage.sqlite import SQLiteStorage
+    
+    storage = SQLiteStorage()
+    
+    run_count = storage.get_run_count()
+    
+    if run_count == 0:
+        formatter.render_warning("No runs in history yet. Run 'reco cluster' first.")
+        storage.close()
+        return
+    
+    failure_stats = storage.get_failure_mode_stats(limit_runs=last_n)
+    
+    storage.close()
+    
+    formatter.render_profile(failure_stats, run_count, last_n)
+
+
+@app.command("analyze-agent")
+def analyze_agent(
+    tracefile: Path = typer.Argument(
+        ...,
+        help="Path to agent trace JSON file",
+    ),
+):
+    """Analyze an agent trace for reliability issues.
+    
+    Examines multi-step agent executions to detect:
+    - Tool execution failures
+    - Recovery failures
+    - Goal abandonment
+    - Excessive retries
+    
+    Example:
+        reco analyze-agent agent_trace.json
+    """
+    from .core.agent_analyzer import AgentAnalyzer, load_trace_from_file
+    
+    if not tracefile.exists():
+        formatter.render_error(f"File not found: {tracefile}")
+        raise typer.Exit(1)
+    
+    try:
+        trace = load_trace_from_file(str(tracefile))
+    except Exception as e:
+        formatter.render_error(f"Failed to load trace: {e}")
+        raise typer.Exit(1)
+    
+    analyzer = AgentAnalyzer()
+    analysis = analyzer.analyze(trace)
+    
+    formatter.render_agent_analysis(analysis)
 
 
 @app.command()

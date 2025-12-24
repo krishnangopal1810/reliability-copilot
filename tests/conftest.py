@@ -319,3 +319,47 @@ def sample_judgment(sample_comparison: Comparison) -> Judgment:
         key_findings=["2 new failures detected"],
         action_items=["Fix t1 and t3 before shipping"],
     )
+
+
+# ============================================================================
+# Mock Storage (Phase 1)
+# ============================================================================
+
+class MockStorage:
+    """Mock storage for testing clustering with history."""
+    
+    def __init__(self):
+        self.saved_runs: list[EvalRun] = []
+        self.saved_clusters: list[tuple[list[FailureCluster], Any, list]] = []
+        self.similar_clusters_to_return: list = []
+        self.occurrence_count_to_return: tuple[int, Any] = (0, None)
+    
+    def save_run(self, run: EvalRun) -> None:
+        self.saved_runs.append(run)
+    
+    def save_clusters(self, clusters, run_id, embeddings) -> None:
+        self.saved_clusters.append((clusters, run_id, embeddings))
+    
+    def find_similar_clusters(self, embedding, threshold=0.85, limit=10):
+        return self.similar_clusters_to_return
+    
+    def count_recent_occurrences(self, label: str, last_n_runs: int = 5):
+        return self.occurrence_count_to_return
+    
+    def close(self) -> None:
+        pass
+    
+    def set_similar_clusters(self, matches: list) -> None:
+        """Set the clusters to be returned by find_similar_clusters."""
+        self.similar_clusters_to_return = matches
+    
+    def set_occurrence_count(self, count: int, first_seen=None) -> None:
+        """Set the count to be returned by count_recent_occurrences."""
+        from datetime import datetime, timezone
+        self.occurrence_count_to_return = (count, first_seen or datetime.now(timezone.utc))
+
+
+@pytest.fixture
+def mock_storage() -> MockStorage:
+    """A mock storage for testing."""
+    return MockStorage()

@@ -469,3 +469,156 @@ class TestRenderWarning:
         
         rendered = output.getvalue()
         assert "This feature is experimental" in rendered
+
+
+# ============================================================================
+# Phase 1: Recurring/New Badge Tests
+# ============================================================================
+
+class TestRenderClustersPhase1Badges:
+    """Tests for Phase 1 recurring/new pattern badges."""
+    
+    @pytest.fixture
+    def captured_console(self):
+        """Create a console that captures output."""
+        output = StringIO()
+        console = Console(file=output, force_terminal=True, width=100)
+        return console, output
+    
+    def test_render_clusters_with_recurring_badge(self, captured_console):
+        """Test that recurring clusters show the RECURRING badge."""
+        from datetime import datetime, timezone
+        
+        console, output = captured_console
+        formatter = TerminalFormatter(console)
+        
+        clusters = [
+            FailureCluster(
+                label="Known Issue",
+                severity=Severity.HIGH,
+                response_ids=["t1", "t2"],
+                is_recurring=True,
+                occurrence_count=3,
+                first_seen=datetime(2024, 1, 15, tzinfo=timezone.utc),
+            ),
+        ]
+        
+        formatter.render_clusters(clusters, 2)
+        
+        result = output.getvalue()
+        assert "RECURRING" in result
+        assert "3x" in result
+        assert "Jan 15" in result
+    
+    def test_render_clusters_with_new_badge(self, captured_console):
+        """Test that new clusters show the NEW badge."""
+        console, output = captured_console
+        formatter = TerminalFormatter(console)
+        
+        clusters = [
+            FailureCluster(
+                label="Brand New Pattern",
+                severity=Severity.MEDIUM,
+                response_ids=["t1", "t2"],
+                is_recurring=False,
+            ),
+        ]
+        
+        formatter.render_clusters(clusters, 2)
+        
+        result = output.getvalue()
+        assert "NEW" in result
+        assert "First time" in result
+    
+    def test_render_clusters_uncategorized_no_badge(self, captured_console):
+        """Test that Uncategorized clusters don't show NEW badge."""
+        console, output = captured_console
+        formatter = TerminalFormatter(console)
+        
+        clusters = [
+            FailureCluster(
+                label="Uncategorized",
+                severity=Severity.LOW,
+                response_ids=["t1"],
+                is_recurring=False,
+            ),
+        ]
+        
+        formatter.render_clusters(clusters, 1)
+        
+        result = output.getvalue()
+        # Should not show NEW badge for Uncategorized
+        assert "First time" not in result
+    
+    def test_render_clusters_single_failure_no_badge(self, captured_console):
+        """Test that Single Failure clusters don't show NEW badge."""
+        console, output = captured_console
+        formatter = TerminalFormatter(console)
+        
+        clusters = [
+            FailureCluster(
+                label="Single Failure",
+                severity=Severity.MEDIUM,
+                response_ids=["t1"],
+                is_recurring=False,
+            ),
+        ]
+        
+        formatter.render_clusters(clusters, 1)
+        
+        result = output.getvalue()
+        # Should not show NEW badge for Single Failure
+        assert "First time" not in result
+    
+    def test_render_clusters_recurring_without_first_seen(self, captured_console):
+        """Test recurring badge when first_seen is None."""
+        console, output = captured_console
+        formatter = TerminalFormatter(console)
+        
+        clusters = [
+            FailureCluster(
+                label="Old Issue",
+                severity=Severity.MEDIUM,
+                response_ids=["t1", "t2"],
+                is_recurring=True,
+                occurrence_count=5,
+                first_seen=None,
+            ),
+        ]
+        
+        formatter.render_clusters(clusters, 2)
+        
+        result = output.getvalue()
+        assert "RECURRING" in result
+        assert "5x" in result
+        # Should not crash when first_seen is None
+    
+    def test_render_clusters_mixed_recurring_and_new(self, captured_console):
+        """Test rendering mixed recurring and new patterns."""
+        from datetime import datetime, timezone
+        
+        console, output = captured_console
+        formatter = TerminalFormatter(console)
+        
+        clusters = [
+            FailureCluster(
+                label="Recurring Pattern",
+                severity=Severity.HIGH,
+                response_ids=["t1", "t2"],
+                is_recurring=True,
+                occurrence_count=3,
+                first_seen=datetime(2024, 1, 15, tzinfo=timezone.utc),
+            ),
+            FailureCluster(
+                label="New Pattern",
+                severity=Severity.MEDIUM,
+                response_ids=["t3", "t4"],
+                is_recurring=False,
+            ),
+        ]
+        
+        formatter.render_clusters(clusters, 4)
+        
+        result = output.getvalue()
+        assert "RECURRING" in result
+        assert "NEW" in result

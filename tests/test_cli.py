@@ -353,3 +353,77 @@ class TestMainHelp:
         assert "cluster" in result.output
         assert "diff" in result.output
         assert "version" in result.output
+
+
+class TestProfileCommand:
+    """Tests for the profile command."""
+    
+    def test_profile_help(self):
+        """Test profile help output."""
+        result = runner.invoke(app, ["profile", "--help"])
+        
+        assert result.exit_code == 0
+        assert "reliability profile" in result.output.lower() or "last-n" in result.output
+    
+    def test_profile_last_n_option(self):
+        """Test --last-n option is recognized."""
+        result = runner.invoke(app, ["profile", "--help"])
+        
+        assert "--last-n" in result.output or "-n" in result.output
+
+
+class TestAnalyzeAgentCommand:
+    """Tests for the analyze-agent command."""
+    
+    @pytest.fixture
+    def sample_trace(self, tmp_path):
+        """Create a sample agent trace."""
+        trace = {
+            "id": "test",
+            "goal": "Test goal",
+            "outcome": "failed",
+            "steps": [
+                {"step": 1, "action": "search", "success": True},
+                {"step": 2, "action": "process", "success": False, "error": "Failed"},
+            ]
+        }
+        
+        file_path = tmp_path / "trace.json"
+        file_path.write_text(json.dumps(trace))
+        return file_path
+    
+    def test_analyze_agent_success(self, sample_trace):
+        """Test analyze-agent with valid trace."""
+        result = runner.invoke(app, ["analyze-agent", str(sample_trace)])
+        
+        assert result.exit_code == 0
+        assert "AGENT TRACE ANALYSIS" in result.output
+    
+    def test_analyze_agent_missing_file(self, tmp_path):
+        """Test analyze-agent with missing file."""
+        result = runner.invoke(app, ["analyze-agent", str(tmp_path / "missing.json")])
+        
+        assert result.exit_code == 1
+    
+    def test_analyze_agent_invalid_json(self, tmp_path):
+        """Test analyze-agent with invalid JSON."""
+        invalid_file = tmp_path / "invalid.json"
+        invalid_file.write_text("not json {{")
+        
+        result = runner.invoke(app, ["analyze-agent", str(invalid_file)])
+        
+        assert result.exit_code == 1
+    
+    def test_analyze_agent_help(self):
+        """Test analyze-agent help output."""
+        result = runner.invoke(app, ["analyze-agent", "--help"])
+        
+        assert result.exit_code == 0
+        assert "trace" in result.output.lower() or "agent" in result.output.lower()
+    
+    def test_analyze_agent_shows_issues(self, sample_trace):
+        """Test that analyze-agent shows detected issues."""
+        result = runner.invoke(app, ["analyze-agent", str(sample_trace)])
+        
+        assert result.exit_code == 0
+        assert "ISSUES" in result.output or "Tool" in result.output
