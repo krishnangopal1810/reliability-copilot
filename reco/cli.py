@@ -552,11 +552,19 @@ def run(
         console.print(f"  Pass rate: {previous_run.pass_rate:.1%} → {eval_run.pass_rate:.1%}")
         console.print(f"  Improvements: {len(comparison.improvements)}")
         console.print(f"  Regressions: {len(comparison.regressions)}")
+        
+        # Fail if regressions exist
+        if comparison.regressions:
+            raise typer.Exit(1)
     else:
         # Full judgment
         judge = JudgmentGenerator(llm=llm)
         judgment = judge.generate(comparison)
         formatter.render_judgment(judgment, comparison)
+        
+        # Fail if judgment is DO NOT SHIP
+        if judgment.decision == "DO NOT SHIP":
+            raise typer.Exit(1)
 
 
 @app.command()
