@@ -301,6 +301,60 @@ def analyze_agent(
 
 
 @app.command()
+def gate(
+    baseline: Path = typer.Argument(
+        ...,
+        help="Path to baseline eval JSON (current production)",
+        exists=True,
+    ),
+    candidate: Path = typer.Argument(
+        ...,
+        help="Path to candidate eval JSON (proposed release)",
+        exists=True,
+    ),
+    config: Optional[Path] = typer.Option(
+        None,
+        "--config", "-c",
+        help="Path to thresholds config (default: .reco/thresholds.yaml)",
+    ),
+):
+    """Check if candidate passes deployment thresholds.
+    
+    Compares a candidate run against a baseline and checks
+    configurable thresholds. Returns exit code 1 if blocked.
+    
+    Ideal for CI/CD pipelines to gate deployments.
+    
+    Example:
+        reco gate baseline.json candidate.json
+    """
+    from .core.gate import DeploymentGate, GateThresholds
+    
+    console.print("[dim]Loading eval runs...[/dim]")
+    
+    baseline_run = load_run(baseline)
+    candidate_run = load_run(candidate)
+    
+    console.print(f"[dim]Baseline: {len(baseline_run.responses)} responses, {baseline_run.pass_rate:.1%} pass[/dim]")
+    console.print(f"[dim]Candidate: {len(candidate_run.responses)} responses, {candidate_run.pass_rate:.1%} pass[/dim]")
+    console.print()
+    
+    # Load thresholds
+    thresholds = GateThresholds.load(config)
+    
+    # Run gate check
+    gate_checker = DeploymentGate(thresholds)
+    result = gate_checker.check(baseline_run, candidate_run)
+    
+    # Render result
+    formatter.render_gate(result, thresholds)
+    
+    # Exit code for CI
+    if not result.passed:
+        raise typer.Exit(1)
+
+
+@app.command()
 def version():
     """Show version information."""
     from . import __version__

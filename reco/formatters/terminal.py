@@ -301,3 +301,69 @@ class TerminalFormatter:
         )
         
         self.console.print(panel)
+    
+    def render_gate(self, result: "GateResult", thresholds: "GateThresholds") -> None:
+        """Render deployment gate result.
+        
+        Args:
+            result: The gate check result
+            thresholds: The thresholds that were used
+        """
+        from ..core.gate import GateResult, GateThresholds
+        
+        # Header
+        if result.passed:
+            status = "[bold green]✅ PASSED[/bold green]"
+            border_color = "green"
+        else:
+            status = "[bold red]❌ BLOCKED[/bold red]"
+            border_color = "red"
+        
+        header = Text()
+        header.append("🚦 DEPLOYMENT GATE", style="bold")
+        
+        lines = [""]
+        lines.append(f"[bold]RESULT:[/bold] {status}")
+        lines.append("")
+        
+        # Pass rate comparison
+        lines.append("[bold]📊 PASS RATES[/bold]")
+        delta = result.pass_rate_candidate - result.pass_rate_baseline
+        delta_str = f"+{delta:.1%}" if delta >= 0 else f"{delta:.1%}"
+        delta_color = "green" if delta >= 0 else "red"
+        
+        lines.append(f"   Baseline:  {result.pass_rate_baseline:.1%}")
+        lines.append(f"   Candidate: {result.pass_rate_candidate:.1%} ([{delta_color}]{delta_str}[/{delta_color}])")
+        lines.append("")
+        
+        # Threshold checks
+        lines.append("[bold]📋 THRESHOLD CHECKS[/bold]")
+        
+        # max_regression
+        regression_ok = result.regression_percent <= thresholds.max_regression_percent
+        regression_icon = "✅" if regression_ok else "❌"
+        lines.append(f"   {regression_icon} max_regression: {result.regression_percent:.1f}% (limit: {thresholds.max_regression_percent}%)")
+        
+        # min_pass_rate
+        pass_rate_ok = result.pass_rate_candidate >= thresholds.min_pass_rate
+        pass_rate_icon = "✅" if pass_rate_ok else "❌"
+        lines.append(f"   {pass_rate_icon} min_pass_rate: {result.pass_rate_candidate:.1%} (min: {thresholds.min_pass_rate:.1%})")
+        lines.append("")
+        
+        # Violations
+        if result.violations:
+            lines.append("[bold red]⚠️  VIOLATIONS[/bold red]")
+            for v in result.violations:
+                lines.append(f"   • {v.message}")
+            lines.append("")
+        
+        content = "\n".join(lines)
+        
+        panel = Panel(
+            content,
+            title=header,
+            border_style=border_color,
+            padding=(1, 2),
+        )
+        
+        self.console.print(panel)
