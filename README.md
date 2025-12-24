@@ -125,10 +125,50 @@ reco run                     # Compares to previous, gives judgment
 
 ## CI Integration
 
-Add to your GitHub Actions:
+### With PromptFoo (Recommended)
+
+```yaml
+name: Eval
+
+on: [push, pull_request]
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      # Cache baseline between runs
+      - uses: actions/cache@v4
+        with:
+          path: .reco
+          key: reco-${{ github.ref }}-${{ hashFiles('promptfooconfig.yaml') }}
+          restore-keys: reco-${{ github.ref }}-
+      
+      - run: pip install reliability-copilot
+      
+      - name: Run eval and check
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          reco init
+          reco run  # Compares to cached baseline, fails on regressions
+```
+
+### With JSON files
 
 ```yaml
 - name: Check reliability
+  env:
+    OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
   run: |
     pip install reliability-copilot
     reco gate evals/baseline.json evals/candidate.json
