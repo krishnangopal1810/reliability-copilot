@@ -1,0 +1,22 @@
+prompts:
+  - "Answer very briefly: {{question}}"
+
+providers:
+  - openrouter:xiaomi/mimo-v2-flash:free
+
+tests:
+  - vars:
+      question: "What is 2+2?"
+    assert:
+      - type: contains
+        value: "4"
+  - vars:
+      question: "What is the capital of France?"
+    assert:
+      - type: contains
+        value: "Paris"
+  - vars:
+      question: "What color is the sky?"
+    assert:
+      - type: icontains
+        value: "blue"

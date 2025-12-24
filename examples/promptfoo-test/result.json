@@ -1,0 +1,370 @@
+{
+  "evalId": "eval-gy0-2025-12-24T11:36:43",
+  "results": {
+    "version": 3,
+    "timestamp": "2025-12-24T11:36:43.382Z",
+    "prompts": [
+      {
+        "raw": "Answer the following question concisely: {{question}}",
+        "label": "Answer the following question concisely: {{question}}",
+        "id": "747bb9763b616b78a036d5420bfae19156b3a791c6818bd2341e44f8ac89757c",
+        "provider": "openrouter:xiaomi/mimo-v2-flash:free",
+        "metrics": {
+          "score": 3,
+          "testPassCount": 3,
+          "testFailCount": 0,
+          "testErrorCount": 0,
+          "assertPassCount": 3,
+          "assertFailCount": 0,
+          "totalLatencyMs": 8599,
+          "tokenUsage": {
+            "prompt": 155,
+            "completion": 42,
+            "cached": 0,
+            "total": 197,
+            "numRequests": 3,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0
+              }
+            }
+          },
+          "namedScores": {},
+          "namedScoresCount": {},
+          "cost": 0
+        }
+      }
+    ],
+    "results": [
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "contains",
+                "value": "4"
+              }
+            }
+          ]
+        },
+        "id": "6223eb7c-40df-4150-b2d2-6d36965f3106",
+        "latencyMs": 2691,
+        "namedScores": {},
+        "prompt": {
+          "raw": "Answer the following question concisely: What is 2+2?",
+          "label": "Answer the following question concisely: {{question}}"
+        },
+        "promptId": "747bb9763b616b78a036d5420bfae19156b3a791c6818bd2341e44f8ac89757c",
+        "promptIdx": 0,
+        "provider": {
+          "id": "openrouter:xiaomi/mimo-v2-flash:free",
+          "label": ""
+        },
+        "response": {
+          "output": "4",
+          "tokenUsage": {
+            "total": 54,
+            "prompt": 52,
+            "completion": 2,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0
+            }
+          },
+          "cached": false,
+          "finishReason": "stop"
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "question": "What is 2+2?"
+          },
+          "assert": [
+            {
+              "type": "contains",
+              "value": "4"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 0,
+        "vars": {
+          "question": "What is 2+2?"
+        },
+        "metadata": {
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      },
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "contains",
+                "value": "Paris"
+              }
+            }
+          ]
+        },
+        "id": "44ef0939-193a-4f08-a164-5d2ce4c35fec",
+        "latencyMs": 3406,
+        "namedScores": {},
+        "prompt": {
+          "raw": "Answer the following question concisely: What is the capital of France?",
+          "label": "Answer the following question concisely: {{question}}"
+        },
+        "promptId": "747bb9763b616b78a036d5420bfae19156b3a791c6818bd2341e44f8ac89757c",
+        "promptIdx": 0,
+        "provider": {
+          "id": "openrouter:xiaomi/mimo-v2-flash:free",
+          "label": ""
+        },
+        "response": {
+          "output": "Paris",
+          "tokenUsage": {
+            "total": 54,
+            "prompt": 52,
+            "completion": 2,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0
+            }
+          },
+          "cached": false,
+          "finishReason": "stop"
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "question": "What is the capital of France?"
+          },
+          "assert": [
+            {
+              "type": "contains",
+              "value": "Paris"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 1,
+        "vars": {
+          "question": "What is the capital of France?"
+        },
+        "metadata": {
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      },
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "icontains",
+                "value": "blue"
+              }
+            }
+          ]
+        },
+        "id": "0d26d2e1-3281-45b9-bb8c-941bfcedd0f9",
+        "latencyMs": 2502,
+        "namedScores": {},
+        "prompt": {
+          "raw": "Answer the following question concisely: What color is the sky?",
+          "label": "Answer the following question concisely: {{question}}"
+        },
+        "promptId": "747bb9763b616b78a036d5420bfae19156b3a791c6818bd2341e44f8ac89757c",
+        "promptIdx": 0,
+        "provider": {
+          "id": "openrouter:xiaomi/mimo-v2-flash:free",
+          "label": ""
+        },
+        "response": {
+          "output": "On a clear day, the sky appears **blue**. This is because molecules in the air scatter the sun's blue light more than other colors (a phenomenon called Rayleigh scattering).",
+          "tokenUsage": {
+            "total": 89,
+            "prompt": 51,
+            "completion": 38,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0
+            }
+          },
+          "cached": false,
+          "finishReason": "stop"
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "question": "What color is the sky?"
+          },
+          "assert": [
+            {
+              "type": "icontains",
+              "value": "blue"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 2,
+        "vars": {
+          "question": "What color is the sky?"
+        },
+        "metadata": {
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      }
+    ],
+    "stats": {
+      "successes": 3,
+      "failures": 0,
+      "errors": 0,
+      "tokenUsage": {
+        "prompt": 155,
+        "completion": 42,
+        "cached": 0,
+        "total": 197,
+        "numRequests": 3,
+        "completionDetails": {
+          "reasoning": 0,
+          "acceptedPrediction": 0,
+          "rejectedPrediction": 0
+        },
+        "assertions": {
+          "total": 0,
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "numRequests": 0,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0
+          }
+        }
+      },
+      "durationMs": 3417
+    }
+  },
+  "config": {
+    "prompts": [
+      "Answer the following question concisely: {{question}}"
+    ],
+    "providers": [
+      "openrouter:xiaomi/mimo-v2-flash:free"
+    ],
+    "tests": [
+      {
+        "vars": {
+          "question": "What is 2+2?"
+        },
+        "assert": [
+          {
+            "type": "contains",
+            "value": "4"
+          }
+        ]
+      },
+      {
+        "vars": {
+          "question": "What is the capital of France?"
+        },
+        "assert": [
+          {
+            "type": "contains",
+            "value": "Paris"
+          }
+        ]
+      },
+      {
+        "vars": {
+          "question": "What color is the sky?"
+        },
+        "assert": [
+          {
+            "type": "icontains",
+            "value": "blue"
+          }
+        ]
+      }
+    ],
+    "outputPath": [
+      "result.json"
+    ],
+    "extensions": []
+  },
+  "shareableUrl": null,
+  "metadata": {
+    "promptfooVersion": "0.120.8",
+    "nodeVersion": "v25.2.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "exportedAt": "2025-12-24T11:36:46.844Z",
+    "evaluationCreatedAt": "2025-12-24T11:36:43.382Z"
+  }
+}
