@@ -4,10 +4,16 @@
     <strong>Know if your AI change is safe to ship. In seconds.</strong>
   </p>
   <p align="center">
+    <a href="https://pypi.org/project/reliability-copilot/"><img src="https://img.shields.io/pypi/v/reliability-copilot" alt="PyPI"></a>
+    <a href="https://github.com/krishnangopal1810/reliability-copilot/actions"><img src="https://img.shields.io/badge/tests-321%20passing-brightgreen" alt="Tests"></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  </p>
+  <p align="center">
     <a href="#quick-start">Quick Start</a> •
     <a href="#why-reco">Why reco?</a> •
     <a href="#commands">Commands</a> •
-    <a href="#ci-integration">CI Integration</a>
+    <a href="#ci-integration">CI Integration</a> •
+    <a href="#roadmap">Roadmap</a>
   </p>
 </p>
 
@@ -246,6 +252,28 @@ pip install -e ".[dev]"
 pytest  # 321 tests
 ```
 
+## Roadmap
+
+- [x] PromptFoo integration (`reco init`, `reco run`)
+- [x] LangChain & OpenAI trace import
+- [x] Failure clustering with HDBSCAN
+- [x] GitHub Actions CI support
+- [ ] Python API for programmatic use
+- [ ] Braintrust & LangSmith importers
+- [ ] reco.cloud — dashboards, trends, team features
+
+## Contributing
+
+Contributions welcome! Please:
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/amazing`)
+3. Make your changes
+4. Run tests (`pytest`)
+5. Submit a PR
+
+See [issues](https://github.com/krishnangopal1810/reliability-copilot/issues) for good first issues.
+
 ## License
 
 MIT
@@ -254,4 +282,8 @@ MIT
 
 <p align="center">
   <strong>Built for teams shipping AI products who need confidence, not just metrics.</strong>
+</p>
+
+<p align="center">
+  ⭐ <strong>If this helps you ship AI with confidence, <a href="https://github.com/krishnangopal1810/reliability-copilot">star this repo</a>!</strong> ⭐
 </p>
