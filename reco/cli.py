@@ -25,6 +25,11 @@ console = Console()
 formatter = TerminalFormatter(console)
 
 
+def get_storage():
+    """Get storage instance."""
+    from .storage.sqlite import SQLiteStorage
+    return SQLiteStorage()
+
 def load_run(path: Path) -> EvalRun:
     """Load an eval run from a JSON file.
     
@@ -439,6 +444,119 @@ def import_trace(
         analyzer = AgentAnalyzer()
         analysis = analyzer.analyze(trace)
         formatter.render_agent_analysis(analysis)
+
+
+@app.command()
+def init():
+    """Initialize reco in the current directory.
+    
+    Detects your eval framework (PromptFoo, etc.) and creates
+    a .reco/config.yaml file for seamless integration.
+    
+    Example:
+        cd my-project
+        reco init
+    """
+    from .core.eval_runner import EvalRunner
+    
+    runner = EvalRunner()
+    result = runner.init()
+    
+    if result["success"]:
+        formatter.render_success(result["message"])
+        console.print("[dim]Created .reco/config.yaml[/dim]")
+        console.print("\n[bold]Next steps:[/bold]")
+        console.print("  1. Run [cyan]reco run[/cyan] to execute your eval and save baseline")
+        console.print("  2. Make changes to your prompts")
+        console.print("  3. Run [cyan]reco run[/cyan] again to compare and get judgment")
+    else:
+        formatter.render_error(result["message"])
+        raise typer.Exit(1)
+
+
+@app.command()
+def run(
+    save_only: bool = typer.Option(
+        False,
+        "--save-only",
+        help="Save result without comparing to previous run",
+    ),
+    no_judgment: bool = typer.Option(
+        False,
+        "--no-judgment",
+        help="Skip LLM judgment, only show comparison stats",
+    ),
+):
+    """Run eval and compare to previous run.
+    
+    Executes your eval framework, stores the result, and compares
+    to the previous run to give you a judgment on whether to ship.
+    
+    Example:
+        reco run              # Run eval and compare to last run
+        reco run --save-only  # Just save result as new baseline
+    """
+    from .core.eval_runner import EvalRunner
+    from .storage.sqlite import SQLiteStorage
+    
+    runner = EvalRunner()
+    
+    # Check if initialized
+    if not runner.load_config():
+        formatter.render_error("Not initialized. Run 'reco init' first.")
+        raise typer.Exit(1)
+    
+    # Run the eval
+    console.print("[dim]Running eval...[/dim]")
+    try:
+        eval_run, raw_output = runner.run_eval()
+    except RuntimeError as e:
+        formatter.render_error(str(e))
+        raise typer.Exit(1)
+    
+    console.print(f"[dim]Captured {len(eval_run.responses)} responses[/dim]")
+    
+    # Add git info to metadata
+    git_info = runner.get_git_info()
+    eval_run.metadata.update(git_info)
+    
+    # Get storage
+    storage = get_storage()
+    
+    # Get previous run for comparison
+    previous_runs = storage.get_recent_runs(limit=1)
+    
+    # Save current run
+    storage.save_run(eval_run)
+    
+    if save_only or not previous_runs:
+        formatter.render_success(f"Saved eval run: {eval_run.name}")
+        if not previous_runs:
+            console.print("[dim]No previous run to compare. This is your new baseline.[/dim]")
+        console.print(f"\n[bold]Stats:[/bold]")
+        console.print(f"  Pass rate: {eval_run.pass_rate:.1%}")
+        console.print(f"  Responses: {len(eval_run.responses)}")
+        return
+    
+    # Compare to previous run
+    previous_run = previous_runs[0]
+    console.print(f"[dim]Comparing to previous run: {previous_run.name}[/dim]")
+    
+    llm = get_llm() if not no_judgment else None
+    comparator = Comparator(llm=llm, config=ComparisonConfig(semantic_diff=not no_judgment))
+    comparison = comparator.compare(previous_run, eval_run)
+    
+    if no_judgment:
+        # Simple stats only
+        console.print("\n[bold]Comparison:[/bold]")
+        console.print(f"  Pass rate: {previous_run.pass_rate:.1%} → {eval_run.pass_rate:.1%}")
+        console.print(f"  Improvements: {len(comparison.improvements)}")
+        console.print(f"  Regressions: {len(comparison.regressions)}")
+    else:
+        # Full judgment
+        judge = JudgmentGenerator(llm=llm)
+        judgment = judge.generate(comparison)
+        formatter.render_judgment(judgment, comparison)
 
 
 @app.command()

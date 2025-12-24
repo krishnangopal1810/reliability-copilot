@@ -83,6 +83,17 @@ class Storage(Protocol):
         """
         ...
     
+    def get_recent_runs(
+        self,
+        limit: int = 5
+    ) -> list[EvalRun]:
+        """Get recent eval runs for comparison.
+        
+        Returns:
+            List of EvalRun objects, most recent first.
+        """
+        ...
+    
     def close(self) -> None:
         """Close storage connection."""
         ...

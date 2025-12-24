@@ -94,6 +94,16 @@ reco import-trace openai_run.json --format openai --analyze
 ```
 → Works with LangChain and OpenAI Assistants
 
+### PromptFoo Integration (Recommended)
+```bash
+# In your PromptFoo project
+reco init                    # Detects promptfooconfig.yaml
+reco run                     # Runs eval, saves baseline
+# ... change your prompt ...
+reco run                     # Compares to previous, gives judgment
+```
+→ Seamless workflow with [PromptFoo](https://promptfoo.dev). Requires Node.js.
+
 ## CI Integration
 
 Add to your GitHub Actions:
@@ -136,7 +146,9 @@ If pass rate drops too much → build fails → bad code doesn't ship.
 | Variable | Required | Default |
 |----------|----------|---------|
 | `OPENROUTER_API_KEY` | Yes | - |
-| `RECO_LLM_MODEL` | No | `anthropic/claude-3.5-sonnet` |
+| `RECO_LLM_MODEL` | No | `xiaomi/mimo-v2-flash:free` |
+
+> **Tip**: For better judgment quality, use a paid model like `anthropic/claude-3.5-sonnet` or `openai/gpt-4o`.
 
 ### Gate Thresholds
 
@@ -169,10 +181,10 @@ domain_categories:
 ## Development
 
 ```bash
-git clone https://github.com/yourusername/reliability-copilot
+git clone https://github.com/krishnangopal1810/reliability-copilot
 cd reliability-copilot
 pip install -e ".[dev]"
-pytest  # 308 tests
+pytest  # 321 tests
 ```
 
 ## License

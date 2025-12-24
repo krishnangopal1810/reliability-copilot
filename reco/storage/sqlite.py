@@ -40,7 +40,8 @@ class SQLiteStorage:
                 id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 created_at TEXT NOT NULL,
-                metadata TEXT
+                metadata TEXT,
+                responses TEXT
             );
             
             CREATE TABLE IF NOT EXISTS clusters (
@@ -61,14 +62,28 @@ class SQLiteStorage:
         self.conn.commit()
     
     def save_run(self, run: EvalRun) -> None:
-        """Persist an eval run."""
+        """Persist an eval run with responses."""
+        # Serialize responses
+        responses_data = [
+            {
+                "id": r.id,
+                "input": r.input,
+                "output": r.output,
+                "expected": r.expected,
+                "passed": r.passed,
+                "failure_reason": r.failure_reason,
+            }
+            for r in run.responses
+        ]
+        
         self.conn.execute(
-            "INSERT OR REPLACE INTO runs (id, name, created_at, metadata) VALUES (?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO runs (id, name, created_at, metadata, responses) VALUES (?, ?, ?, ?, ?)",
             (
                 str(run.id),
                 run.name,
                 run.created_at.isoformat(),
                 json.dumps(run.metadata),
+                json.dumps(responses_data),
             )
         )
         self.conn.commit()
@@ -287,6 +302,52 @@ class SQLiteStorage:
         cursor = self.conn.execute("SELECT COUNT(*) as count FROM runs")
         row = cursor.fetchone()
         return row["count"] if row else 0
+    
+    def get_recent_runs(self, limit: int = 5) -> list[EvalRun]:
+        """Get recent eval runs for comparison.
+        
+        Returns:
+            List of EvalRun objects, most recent first.
+        """
+        cursor = self.conn.execute(
+            """SELECT id, name, created_at, metadata, responses
+               FROM runs
+               ORDER BY created_at DESC
+               LIMIT ?""",
+            (limit,)
+        )
+        
+        runs = []
+        for row in cursor:
+            metadata = json.loads(row["metadata"]) if row["metadata"] else {}
+            
+            # Parse responses if stored
+            responses = []
+            if row["responses"]:
+                try:
+                    responses_data = json.loads(row["responses"])
+                    from ..core.models import Response
+                    for r in responses_data:
+                        responses.append(Response(
+                            id=r.get("id", ""),
+                            input=r.get("input", ""),
+                            output=r.get("output", ""),
+                            expected=r.get("expected"),
+                            passed=r.get("passed", True),
+                            failure_reason=r.get("failure_reason"),
+                        ))
+                except (json.JSONDecodeError, KeyError):
+                    pass
+            
+            runs.append(EvalRun(
+                id=UUID(row["id"]),
+                name=row["name"],
+                created_at=datetime.fromisoformat(row["created_at"]),
+                responses=responses,
+                metadata=metadata,
+            ))
+        
+        return runs
     
     def close(self) -> None:
         """Close database connection."""
