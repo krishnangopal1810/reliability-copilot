@@ -61,6 +61,25 @@ Now what? Is 4% bad? Should you ship? You don't know.
 | **Pattern memory** | Same issue reappears? reco remembers |
 | **CI gate** | Block bad deployments automatically |
 
+### Already using PromptFoo?
+
+reco is the **judgment layer** on top of your eval framework:
+
+| PromptFoo gives you | reco adds |
+|---------------------|-----------|
+| "88% passed" | **"Don't ship — 3 regressions in accuracy"** |
+| List of failures | **Clustered patterns you can fix** |
+| Manual comparison | **Auto baseline tracking** |
+| Numbers | **Decisions** |
+
+```bash
+# Before: stare at numbers
+npx promptfoo eval → "88% passed" → 🤷
+
+# After: get judgment
+reco run → "❌ DO NOT SHIP — introduced hallucinations"
+```
+
 ## Commands
 
 ### Compare Runs
