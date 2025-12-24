@@ -1,0 +1,8 @@
+{"event": "on_chain_start", "run_id": "run_123", "name": "AgentExecutor", "inputs": {"input": "Find the weather in San Francisco and book a restaurant"}}
+{"event": "on_tool_start", "run_id": "run_123", "name": "weather_api", "input": {"city": "San Francisco"}}
+{"event": "on_tool_end", "run_id": "run_123", "output": {"temperature": 65, "conditions": "sunny"}}
+{"event": "on_tool_start", "run_id": "run_123", "name": "restaurant_search", "input": {"city": "San Francisco", "cuisine": "italian"}}
+{"event": "on_tool_end", "run_id": "run_123", "output": {"restaurants": [{"name": "Trattoria", "rating": 4.5}]}}
+{"event": "on_tool_start", "run_id": "run_123", "name": "book_restaurant", "input": {"restaurant": "Trattoria", "time": "7pm"}}
+{"event": "on_tool_error", "run_id": "run_123", "error": "Restaurant fully booked for tonight"}
+{"event": "on_chain_end", "run_id": "run_123", "output": "Could not complete booking"}

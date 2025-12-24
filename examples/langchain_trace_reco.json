@@ -1,0 +1,56 @@
+{
+  "id": "langchain_trace",
+  "goal": "Find the weather in San Francisco and book a restaurant",
+  "outcome": "failed",
+  "steps": [
+    {
+      "step": 1,
+      "action": "weather_api",
+      "input": {
+        "city": "San Francisco"
+      },
+      "output": {
+        "temperature": 65,
+        "conditions": "sunny"
+      },
+      "success": true,
+      "error": null,
+      "duration_ms": null
+    },
+    {
+      "step": 2,
+      "action": "restaurant_search",
+      "input": {
+        "city": "San Francisco",
+        "cuisine": "italian"
+      },
+      "output": {
+        "restaurants": [
+          {
+            "name": "Trattoria",
+            "rating": 4.5
+          }
+        ]
+      },
+      "success": true,
+      "error": null,
+      "duration_ms": null
+    },
+    {
+      "step": 3,
+      "action": "book_restaurant",
+      "input": {
+        "restaurant": "Trattoria",
+        "time": "7pm"
+      },
+      "output": null,
+      "success": false,
+      "error": "Restaurant fully booked for tonight",
+      "duration_ms": null
+    }
+  ],
+  "metadata": {
+    "source": "langchain",
+    "original_file": "examples/langchain_trace.jsonl"
+  }
+}

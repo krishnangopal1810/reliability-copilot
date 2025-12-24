@@ -1,0 +1,67 @@
+{
+  "id": "run_abc123",
+  "goal": "OpenAI Assistant Run (thread_xyz)",
+  "outcome": "failed",
+  "steps": [
+    {
+      "step": 1,
+      "action": "get_stock_price",
+      "input": {
+        "symbol": "AAPL"
+      },
+      "output": {
+        "price": 178.5,
+        "change": 2.3
+      },
+      "success": true,
+      "error": null,
+      "duration_ms": null
+    },
+    {
+      "step": 2,
+      "action": "calculate_portfolio_value",
+      "input": {
+        "holdings": [
+          {
+            "symbol": "AAPL",
+            "shares": 100
+          }
+        ]
+      },
+      "output": {
+        "total_value": 17850.0
+      },
+      "success": true,
+      "error": null,
+      "duration_ms": null
+    },
+    {
+      "step": 3,
+      "action": "place_trade",
+      "input": {
+        "action": "buy",
+        "symbol": "TSLA",
+        "shares": 50
+      },
+      "output": "",
+      "success": false,
+      "error": "Insufficient funds for trade",
+      "duration_ms": null
+    },
+    {
+      "step": 4,
+      "action": "generate_response",
+      "input": {},
+      "output": {
+        "message_id": "msg_final"
+      },
+      "success": true,
+      "error": null,
+      "duration_ms": null
+    }
+  ],
+  "metadata": {
+    "source": "openai",
+    "original_file": "examples/openai_run_steps.json"
+  }
+}

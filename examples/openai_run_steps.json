@@ -1,0 +1,70 @@
+{
+    "run_id": "run_abc123",
+    "thread_id": "thread_xyz",
+    "data": [
+        {
+            "id": "step_001",
+            "status": "completed",
+            "step_details": {
+                "type": "tool_calls",
+                "tool_calls": [
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "get_stock_price",
+                            "arguments": "{\"symbol\": \"AAPL\"}",
+                            "output": "{\"price\": 178.50, \"change\": 2.3}"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "step_002",
+            "status": "completed",
+            "step_details": {
+                "type": "tool_calls",
+                "tool_calls": [
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "calculate_portfolio_value",
+                            "arguments": "{\"holdings\": [{\"symbol\": \"AAPL\", \"shares\": 100}]}",
+                            "output": "{\"total_value\": 17850.00}"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "step_003",
+            "status": "failed",
+            "step_details": {
+                "type": "tool_calls",
+                "tool_calls": [
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "place_trade",
+                            "arguments": "{\"action\": \"buy\", \"symbol\": \"TSLA\", \"shares\": 50}"
+                        }
+                    }
+                ]
+            },
+            "last_error": {
+                "code": "insufficient_funds",
+                "message": "Insufficient funds for trade"
+            }
+        },
+        {
+            "id": "step_004",
+            "status": "completed",
+            "step_details": {
+                "type": "message_creation",
+                "message_creation": {
+                    "message_id": "msg_final"
+                }
+            }
+        }
+    ]
+}

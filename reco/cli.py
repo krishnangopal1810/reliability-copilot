@@ -354,6 +354,93 @@ def gate(
         raise typer.Exit(1)
 
 
+@app.command("import-trace")
+def import_trace(
+    tracefile: Path = typer.Argument(
+        ...,
+        help="Path to trace file (LangChain JSONL or OpenAI JSON)",
+    ),
+    format: str = typer.Option(
+        "auto",
+        "--format", "-f",
+        help="Trace format: langchain, openai, or auto",
+    ),
+    output: Optional[Path] = typer.Option(
+        None,
+        "--output", "-o",
+        help="Output file path (default: <input>_reco.json)",
+    ),
+    analyze: bool = typer.Option(
+        False,
+        "--analyze", "-a",
+        help="Immediately analyze the converted trace",
+    ),
+):
+    """Import and convert agent traces from frameworks.
+    
+    Supports:
+      - LangChain callback exports (JSONL)
+      - OpenAI Assistants run steps (JSON)
+    
+    Example:
+        reco import-trace langchain_trace.jsonl --format langchain
+        reco import-trace openai_run.json --format openai --analyze
+    """
+    import json
+    from .core.trace_converter import TraceConverter
+    from .core.agent_analyzer import AgentAnalyzer
+    
+    if not tracefile.exists():
+        formatter.render_error(f"File not found: {tracefile}")
+        raise typer.Exit(1)
+    
+    console.print(f"[dim]Importing trace from {tracefile}...[/dim]")
+    
+    try:
+        trace = TraceConverter.convert(str(tracefile), format)
+    except Exception as e:
+        formatter.render_error(f"Failed to convert trace: {e}")
+        raise typer.Exit(1)
+    
+    # Determine output path
+    if output is None:
+        output = tracefile.parent / f"{tracefile.stem}_reco.json"
+    
+    # Save converted trace
+    from dataclasses import asdict
+    trace_dict = {
+        "id": trace.id,
+        "goal": trace.goal,
+        "outcome": trace.outcome,
+        "steps": [
+            {
+                "step": s.step,
+                "action": s.action,
+                "input": s.input,
+                "output": s.output,
+                "success": s.success,
+                "error": s.error,
+                "duration_ms": s.duration_ms,
+            }
+            for s in trace.steps
+        ],
+        "metadata": trace.metadata,
+    }
+    
+    with open(output, "w") as f:
+        json.dump(trace_dict, f, indent=2, default=str)
+    
+    formatter.render_success(f"Converted trace saved to: {output}")
+    console.print(f"[dim]  Steps: {len(trace.steps)}, Outcome: {trace.outcome}[/dim]")
+    
+    # Optionally analyze immediately
+    if analyze:
+        console.print()
+        analyzer = AgentAnalyzer()
+        analysis = analyzer.analyze(trace)
+        formatter.render_agent_analysis(analysis)
+
+
 @app.command()
 def version():
     """Show version information."""
